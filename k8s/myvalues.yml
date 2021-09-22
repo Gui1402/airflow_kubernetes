@@ -170,13 +170,15 @@ executor: "KubernetesExecutor"
 allowPodLaunching: true
 
 # Environment variables for all airflow containers
-env: 
+env:
   - name: AIRFLOW__CORE__REMOTE_LOGGING
     value: 'True'
   - name: AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER
-    value: "gs://airflow-logs-gui/airflow_logs"
+    value: 'gs://airflow-logs-gui/airflow_logs/'
   - name: AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID
-    value: "my_gcp"
+    value: 'my_gcp'
+# - name: ""
+#   value: ""
 
 # Secrets for all airflow containers
 secret: []
@@ -268,7 +270,7 @@ data:
 
 # Fernet key settings
 # Note: fernetKey can only be set during install, not upgrade
-fernetKey: "o21BK-jkq1fpraf7yC2yTE8OWDEvnrH_u75ThA3jq5E="
+fernetKey: "1OnLzRsObuqyqOS_s6w9mPz9za2YYQsBtfh9pcS3_Dg="
 fernetKeySecretName: ~
 
 # Flask secret key for Airflow Webserver: `[webserver] secret_key` in airflow.cfg
@@ -308,24 +310,20 @@ kerberos:
     # order to make it production-ready you must replace it with your own configuration that
     # Matches your kerberos deployment. Administrators of your Kerberos instance should
     # provide the right configuration.
-
     [logging]
     default = "FILE:{{ template "airflow_logs_no_quote" . }}/kerberos_libs.log"
     kdc = "FILE:{{ template "airflow_logs_no_quote" . }}/kerberos_kdc.log"
     admin_server = "FILE:{{ template "airflow_logs_no_quote" . }}/kadmind.log"
-
     [libdefaults]
     default_realm = FOO.COM
     ticket_lifetime = 10h
     renew_lifetime = 7d
     forwardable = true
-
     [realms]
     FOO.COM = {
       kdc = kdc-server.foo.com
       admin_server = admin_server.foo.com
     }
-
 # Airflow Worker Config
 workers:
   # Number of airflow celery workers in StatefulSet
@@ -341,7 +339,6 @@ workers:
     - |-
       exec \
       airflow {{ semverCompare ">=2.0.0" .Values.airflowVersion | ternary "celery worker" "worker" }}
-
   # Update Strategy when worker is deployed as a StatefulSet
   updateStrategy: ~
   # Update Strategy when worker is deployed as a Deployment
@@ -733,7 +730,6 @@ flower:
     - |-
       exec \
       airflow {{ semverCompare ">=2.0.0" .Values.airflowVersion | ternary "celery flower" "flower" }}
-
   # Additional network policies as needed (Deprecated - renamed to `flower.networkPolicy.ingress.from`)
   extraNetworkPolicies: []
   networkPolicy:
@@ -771,7 +767,7 @@ flower:
   password: ~
 
   service:
-    type: ClusterIP
+    type: LoadBalancer
     ## service annotations
     annotations: {}
     ports:
@@ -1174,15 +1170,15 @@ dags:
     # ssh examples ssh://git@github.com/apache/airflow.git
     # git@github.com:apache/airflow.git
     # https example: https://github.com/apache/airflow.git
-    repo: https://github.com/apache/airflow.git
-    branch: v2-1-stable
+    repo: https://github.com/Gui1402/airflow_kubernetes.git
+    branch: dev
     rev: HEAD
     depth: 1
     # the number of consecutive failures allowed before aborting
     maxFailures: 0
     # subpath within the repo where dags are located
     # should be "" if dags are at repo root
-    subPath: "tests/dags"
+    subPath: "dags"
     # if your repo needs a user name password
     # you can load them to a k8s secret like the one below
     #   ---
@@ -1241,4 +1237,3 @@ logs:
     storageClassName:
     ## the name of an existing PVC to use
     existingClaim:
-
